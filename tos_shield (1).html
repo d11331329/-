@@ -1,0 +1,1717 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ToS-Shield 條款拆彈器 - AI 註冊條款風險偵測與對比系統</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 圖標 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght=300;400;500;700;900&family=JetBrains+Mono:wght=400;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Noto Sans TC', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        themeBg: 'var(--bg-color)',
+                        themeCard: 'var(--card-color)',
+                        themeText: 'var(--text-color)',
+                        themeMuted: 'var(--text-muted)',
+                        themeBorder: 'var(--border-color)',
+                        accentRed: '#EF4444',
+                        accentYellow: '#F59E0B',
+                        accentGreen: '#10B981',
+                        brandBlue: '#3B82F6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --bg-color: #0B0F19;
+            --card-color: #161D30;
+            --text-color: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --border-color: #1F2937;
+            --glow-red: rgba(239, 68, 68, 0.15);
+            --glow-yellow: rgba(245, 158, 11, 0.15);
+            --glow-green: rgba(16, 185, 129, 0.15);
+        }
+        body.light {
+            --bg-color: #F8FAFC;
+            --card-color: #FFFFFF;
+            --text-color: #0F172A;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --glow-red: rgba(239, 68, 68, 0.08);
+            --glow-yellow: rgba(245, 158, 11, 0.08);
+            --glow-green: rgba(16, 185, 129, 0.08);
+        }
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        /* 導覽列與卡片 */
+        .glass-header {
+            background-color: rgba(11, 15, 25, 0.8);
+            border-bottom: 1px solid var(--border-color);
+        }
+        body.light .glass-header {
+            background-color: rgba(248, 250, 252, 0.8);
+        }
+        /* 滾動條樣式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-color);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-color);
+            border-radius: 99px;
+        }
+        /* 霓虹邊框與立體 Glow 效果 */
+        .neon-border-red {
+            box-shadow: 0 0px 30px -10px var(--glow-red);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+        .neon-border-yellow {
+            box-shadow: 0 0px 30px -10px var(--glow-yellow);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+        .neon-border-green {
+            box-shadow: 0 0px 30px -10px var(--glow-green);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        body.light .ambient-glow {
+            opacity: 0.1;
+        }
+        /* 高質感卡片陰影 */
+        .premium-shadow {
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.3);
+        }
+        body.light .premium-shadow {
+            box-shadow: 0 10px 30px -10px rgba(148, 163, 184, 0.12);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-blue-600 selection:text-white">
+
+    <!-- 背景科技風裝飾光暈 -->
+    <div class="ambient-glow absolute top-0 left-0 w-full h-96 bg-gradient-to-b from-blue-900/10 to-transparent pointer-events-none z-0 transition-opacity duration-300"></div>
+    <div class="ambient-glow absolute top-20 left-10 w-72 h-72 bg-blue-600/5 rounded-full filter blur-[100px] pointer-events-none transition-opacity duration-300"></div>
+    <div class="ambient-glow absolute bottom-20 right-10 w-80 h-80 bg-red-600/5 rounded-full filter blur-[100px] pointer-events-none transition-opacity duration-300"></div>
+
+    <!-- 導覽列：流式 relative z-10，隨網頁捲動自然上移 -->
+    <header class="relative z-10 glass-header backdrop-blur-md transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-tr from-blue-600 to-red-500 p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-white text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <span class="font-black text-xl tracking-wider bg-gradient-to-r from-themeText via-themeText to-themeMuted bg-clip-text text-transparent">ToS-Shield</span>
+                    <span class="text-[10px] block text-blue-400 font-mono tracking-widest font-bold">v2.0 // 智能合約防禦矩陣</span>
+                </div>
+            </div>
+            
+            <!-- 模式切換、黑白模式與設定 -->
+            <div class="flex items-center space-x-3">
+                <!-- 模式切換按鈕組 -->
+                <div class="bg-themeCard p-1 rounded-xl border border-themeBorder flex items-center space-x-1 transition-all duration-300">
+                    <button id="btnSingleMode" onclick="switchMode('single')" class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 bg-blue-600 text-white shadow-md">
+                        <i class="fa-solid fa-file-contract"></i>
+                        <span class="hidden md:inline">單份審查</span>
+                    </button>
+                    <button id="btnCompareMode" onclick="switchMode('compare')" class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 text-themeMuted hover:text-themeText">
+                        <i class="fa-solid fa-code-compare"></i>
+                        <span class="hidden md:inline">雙約 PK</span>
+                    </button>
+                    <button id="btnVersionMode" onclick="switchMode('version')" class="px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 text-themeMuted hover:text-themeText">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <span class="hidden md:inline">版本更迭 PK</span>
+                    </button>
+                </div>
+                
+                <!-- 黑白模式切換按鈕 -->
+                <button id="themeToggleBtn" onclick="toggleTheme()" class="text-themeMuted hover:text-themeText transition-all duration-300 flex items-center justify-center bg-themeCard hover:bg-themeBorder p-2.5 rounded-xl border border-themeBorder text-sm">
+                    <i id="themeIcon" class="fa-solid fa-sun text-sm"></i>
+                </button>
+
+                <!-- 設定按鈕 -->
+                <button onclick="openConfigModal()" class="text-themeMuted hover:text-themeText transition-all duration-300 flex items-center justify-center bg-themeCard hover:bg-themeBorder p-2.5 rounded-xl border border-themeBorder text-sm">
+                    <i class="fa-solid fa-gear"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-grow w-full">
+        
+        <!-- 錯誤訊息提示區 -->
+        <div id="errorArea" class="hidden bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-2xl mb-8 flex items-start space-x-3 relative z-20">
+            <i class="fa-solid fa-circle-exclamation text-lg mt-0.5"></i>
+            <div class="flex-1">
+                <h4 class="font-bold text-sm">分析失敗</h4>
+                <p class="text-xs text-themeMuted mt-1" id="errorMessage">未知錯誤，請確認網路連線或 API Key 設定。</p>
+            </div>
+            <button onclick="hideError()" class="text-themeMuted hover:text-themeText"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- 載入中動畫 -->
+        <div id="loadingArea" class="hidden my-16 text-center">
+            <div class="inline-flex flex-col items-center">
+                <div class="relative w-16 h-16 mb-4">
+                    <div class="absolute inset-0 rounded-full border-4 border-blue-500/10"></div>
+                    <div class="absolute inset-0 rounded-full border-4 border-t-blue-500 animate-spin"></div>
+                    <i class="fa-solid fa-user-shield text-2xl text-blue-500 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></i>
+                </div>
+                <h3 class="text-base font-bold text-themeText mb-1 animate-pulse">AI 正在審查與分析條款中...</h3>
+                <p class="text-xs text-themeMuted max-w-xs leading-relaxed" id="loadingTip">正在進行法律術語對照...</p>
+            </div>
+        </div>
+
+        <!-- ==================== 頁面 A：單合約審查模式 ==================== -->
+        <div id="singleModeSection" class="transition-all duration-300">
+            <div class="text-center mb-8 max-w-3xl mx-auto">
+                <h1 class="text-3xl sm:text-4xl font-black text-themeText mb-4 tracking-tight">
+                    別再盲目按 <span class="bg-gradient-to-r from-red-500 to-amber-500 bg-clip-text text-transparent">「我同意」</span>！
+                </h1>
+                <p class="text-themeMuted text-xs sm:text-sm leading-relaxed">
+                    每次註冊新帳號時，你真的看過那幾萬字的合約嗎？英文條款更像無字天書？<br>
+                    讓 <strong>ToS-Shield AI</strong> 瞬間拆解：<strong>白話揭穿話術</strong>、對齊<strong>台灣消保/個資法</strong>，並揪出<strong>合約中偷漏掉的隱形保障</strong>！
+                </p>
+            </div>
+
+            <!-- 輸入條款 -->
+            <div class="bg-themeCard rounded-2xl border border-themeBorder p-5 sm:p-6 mb-8 premium-shadow transition-all duration-300">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
+                        <h2 class="text-sm font-black text-themeText">請貼上註冊服務條款 (ToS) 或隱私權政策：</h2>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] text-themeMuted font-bold">試試陷阱範例：</span>
+                        <button onclick="loadExample('game')" class="text-[11px] bg-themeBg hover:bg-themeBorder text-themeText px-2.5 py-1.5 rounded-lg border border-themeBorder transition font-bold shadow-sm">
+                            🎮 遊戲陷阱
+                        </button>
+                        <button onclick="loadExample('social')" class="text-[11px] bg-themeBg hover:bg-themeBorder text-themeText px-2.5 py-1.5 rounded-lg border border-themeBorder transition font-bold shadow-sm">
+                            📱 社群隱私
+                        </button>
+                        <button onclick="loadExample('foreign')" class="text-[11px] bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 px-2.5 py-1.5 rounded-lg border border-indigo-500/20 transition font-bold flex items-center space-x-1 shadow-sm">
+                            <span>🇺🇸 Discord 英文</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 輸入框 -->
+                <div class="relative">
+                    <textarea id="tosInput" rows="7" 
+                        class="w-full bg-themeBg text-themeText placeholder-themeMuted rounded-xl border border-themeBorder p-4 font-sans text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none duration-300" 
+                        placeholder="在此貼上網站註冊、APP安裝時彈出的長篇協議條款... 英文條款會自動翻譯、解密。"></textarea>
+                    <div class="absolute bottom-3 right-3 text-xs text-themeMuted font-mono" id="charCount">0 字</div>
+                </div>
+
+                <div class="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="text-xs text-themeMuted flex items-center space-x-1.5">
+                        <i class="fa-solid fa-circle-nodes text-indigo-500"></i>
+                        <span>新版強化：整合整體合約風險指數、法規白話解密與遺漏條款警示。</span>
+                    </div>
+                    <button id="analyseBtn" onclick="analyzeContract()" 
+                        class="w-full sm:w-auto bg-gradient-to-r from-blue-600 via-indigo-600 to-red-600 hover:opacity-95 text-white font-bold px-8 py-3 rounded-xl shadow-lg flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-xs sm:text-sm">
+                        <i class="fa-solid fa-bomb text-base"></i>
+                        <span>開始合約關鍵診斷</span>
+                    </button>
+                </div>
+            </div>
+
+            <div id="resultArea" class="hidden transition-all duration-500">
+                <div class="p-1">
+                    <!-- 診斷摘要看板 -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                        <div class="bg-themeCard border border-themeBorder rounded-xl p-4 flex flex-col justify-between relative overflow-hidden transition-all duration-300 shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-themeMuted font-black">總體風險指數</span>
+                                <span id="riskLabel" class="text-[10px] font-black px-1.5 py-0.5 rounded">極高</span>
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span id="riskScore" class="text-3xl font-black font-mono text-red-500">0%</span>
+                                <span class="text-[11px] text-themeMuted">風險值</span>
+                            </div>
+                            <div class="w-full bg-themeBg h-2 rounded-full mt-3 overflow-hidden transition-all duration-300">
+                                <div id="riskBar" class="bg-gradient-to-r from-amber-500 to-red-500 h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div class="bg-themeCard border border-themeBorder rounded-xl p-4 flex items-center space-x-3 transition-all duration-300 shadow-sm">
+                            <div class="bg-green-500/10 p-2.5 rounded-lg text-green-500">
+                                <i class="fa-solid fa-shield-halved text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-themeMuted block font-black">安全簽署等級</span>
+                                <span class="text-xl font-black text-green-500 font-mono" id="safetyScore">A+</span>
+                            </div>
+                        </div>
+                        <div class="bg-themeCard border border-themeBorder rounded-xl p-4 flex items-center space-x-3 transition-all duration-300 shadow-sm">
+                            <div class="bg-red-500/10 p-2.5 rounded-lg text-red-500">
+                                <i class="fa-solid fa-biohazard text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-themeMuted block font-black">紅燈高危風險</span>
+                                <span class="text-xl font-black text-red-500 font-mono" id="redCount">0</span>
+                            </div>
+                        </div>
+                        <div class="bg-themeCard border border-themeBorder rounded-xl p-4 flex items-center space-x-3 transition-all duration-300 shadow-sm">
+                            <div class="bg-amber-500/10 p-2.5 rounded-lg text-amber-500">
+                                <i class="fa-solid fa-triangle-exclamation text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-themeMuted block font-black">黃燈潛在犧牲</span>
+                                <span class="text-xl font-black text-amber-500 font-mono" id="yellowCount">0</span>
+                            </div>
+                        </div>
+                        <div class="bg-themeCard border border-themeBorder rounded-xl p-4 flex items-center space-x-3 transition-all duration-300 shadow-sm">
+                            <div class="bg-emerald-500/10 p-2.5 rounded-lg text-emerald-500">
+                                <i class="fa-solid fa-shield-cat text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[11px] text-themeMuted block font-black">應補上之保護</span>
+                                <span class="text-xl font-black text-emerald-500 font-mono" id="greenCount">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 左右三欄大佈局 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- 左欄：🔴 紅燈 -->
+                        <div class="bg-themeCard/50 rounded-2xl p-5 border border-themeBorder neon-border-red flex flex-col justify-between transition-all duration-300">
+                            <div>
+                                <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="flex h-2.5 w-2.5 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                        </span>
+                                        <h3 class="text-base font-black text-red-500">🔴 紅燈高危條款</h3>
+                                    </div>
+                                    <span class="text-[10px] bg-red-500/10 text-red-500 px-2 py-0.5 rounded font-bold border border-red-500/20">違法無效</span>
+                                </div>
+                                <div id="redList" class="space-y-4"></div>
+                            </div>
+                        </div>
+
+                        <!-- 中欄：🟡 黃燈 -->
+                        <div class="bg-themeCard/50 rounded-2xl p-5 border border-themeBorder neon-border-yellow flex flex-col justify-between transition-all duration-300">
+                            <div>
+                                <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="flex h-2.5 w-2.5 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                        </span>
+                                        <h3 class="text-base font-black text-amber-500">🟡 黃燈潛在犧牲</h3>
+                                    </div>
+                                    <span class="text-[10px] bg-amber-500/10 text-amber-500 px-2 py-0.5 rounded font-bold border border-amber-500/20 font-bold">消費者吃虧</span>
+                                </div>
+                                <div id="yellowList" class="space-y-4"></div>
+                            </div>
+                        </div>
+
+                        <!-- 右欄：🟢 綠燈 -->
+                        <div class="bg-themeCard/50 rounded-2xl p-5 border border-themeBorder neon-border-green flex flex-col justify-between transition-all duration-300">
+                            <div>
+                                <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="flex h-2.5 w-2.5 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                        </span>
+                                        <h3 class="text-base font-black text-emerald-400">🟢 缺漏預防與補強</h3>
+                                    </div>
+                                    <span class="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded font-bold border border-emerald-500/20 font-bold">建議增設</span>
+                                </div>
+                                <div id="greenList" class="space-y-4"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 底部智能建議 -->
+                    <div class="mt-8 bg-blue-500/5 border border-blue-500/15 p-5 rounded-2xl transition-all duration-300">
+                        <div class="flex items-start space-x-3.5">
+                            <div class="bg-blue-500/10 p-2.5 rounded-xl text-blue-500 flex-shrink-0">
+                                <i class="fa-solid fa-graduation-cap text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-black text-themeText mb-1">💡 專家拆彈與補救對策</h4>
+                                <p class="text-xs text-themeMuted leading-relaxed font-medium" id="smartAdvice">
+                                    分析完此協議，建議您注意第三方資料共享和單方面退費機制。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 控制按鈕 -->
+                <div class="mt-6 flex justify-end">
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="w-full sm:w-auto bg-themeCard hover:bg-themeBorder text-themeText font-extrabold px-6 py-2.5 rounded-xl border border-themeBorder text-xs sm:text-sm flex items-center justify-center space-x-2 transition shadow-sm duration-300">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        <span>重新上傳新條款</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 頁面 B：雙合約 PK 比較模式 ==================== -->
+        <div id="compareModeSection" class="hidden transition-all duration-300">
+            <div class="text-center mb-8 max-w-3xl mx-auto">
+                <h1 class="text-3xl sm:text-4xl font-black text-themeText mb-4 tracking-tight">
+                    合約雙向 <span class="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">PK 大對決</span>！
+                </h1>
+                <p class="text-themeMuted text-xs sm:text-sm leading-relaxed">
+                    在兩個相似的網路服務之間猶豫不決？貼上兩邊的註冊條款，AI 幫你橫向對比！
+                </p>
+            </div>
+
+            <!-- 輸入區域 -->
+            <div class="bg-themeCard rounded-2xl border border-themeBorder p-5 sm:p-6 mb-8 premium-shadow transition-all duration-300">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3 border-b border-themeBorder pb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                        <h2 class="text-sm font-black text-themeText">請貼上兩份不同的服務合約條款：</h2>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] text-themeMuted font-bold">載入對比 Demo：</span>
+                        <button onclick="loadCompareExample('gamePK')" class="text-[11px] bg-themeBg hover:bg-themeBorder text-themeText px-2.5 py-1.5 rounded-lg border border-themeBorder transition font-bold shadow-sm">
+                            🎮 遊戲合約 A vs B
+                        </button>
+                        <button onclick="loadCompareExample('socialPK')" class="text-[11px] bg-themeBg hover:bg-themeBorder text-themeText px-2.5 py-1.5 rounded-lg border border-themeBorder transition font-bold shadow-sm">
+                            📱 社群協議 A vs B
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 契約 A 輸入 -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-blue-400 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-file-invoice"></i>
+                                <span>契約 A (第一份條約)</span>
+                            </span>
+                            <span class="text-[10px] text-themeMuted font-mono" id="charCountA">0 字</span>
+                        </div>
+                        <textarea id="tosInputA" rows="8" 
+                            class="w-full bg-themeBg text-themeText placeholder-themeMuted rounded-xl border border-themeBorder p-4 font-sans text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition resize-none duration-300" 
+                            placeholder="請貼上第一份註冊條約..."></textarea>
+                    </div>
+
+                    <!-- 契約 B 輸入 -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-amber-400 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-file-invoice"></i>
+                                <span>契約 B (第二份條約)</span>
+                            </span>
+                            <span class="text-[10px] text-themeMuted font-mono" id="charCountB">0 字</span>
+                        </div>
+                        <textarea id="tosInputB" rows="8" 
+                            class="w-full bg-themeBg text-themeText placeholder-themeMuted rounded-xl border border-themeBorder p-4 font-sans text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent transition resize-none duration-300" 
+                            placeholder="請貼上第二份註冊條約..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-themeBorder">
+                    <span class="text-xs text-themeMuted flex items-center space-x-1">
+                        <i class="fa-solid fa-code-compare text-emerald-400"></i>
+                        <span>AI 將針對安全度、退費機制、個資保護進行綜合對比。</span>
+                    </span>
+                    <button id="compareBtn" onclick="analyzeComparison()" 
+                        class="w-full sm:w-auto bg-gradient-to-r from-emerald-600 via-teal-600 to-blue-600 hover:opacity-95 text-white font-bold px-10 py-3.5 rounded-xl shadow-lg flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 transition-all duration-200 text-xs sm:text-sm">
+                        <i class="fa-solid fa-right-left text-base"></i>
+                        <span>開始合約 PK 評測</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- PK 結果展示 -->
+            <div id="compareResultArea" class="hidden transition-all duration-500">
+                <div class="p-1 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- 契約 A 指標 -->
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 relative overflow-hidden transition-all duration-300 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs sm:text-sm font-black text-blue-500 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-contract"></i> 契約 A 診斷指標
+                                </span>
+                                <span id="gradeBadgeA" class="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-red-950 text-red-400 border border-red-900/30">C 等級</span>
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span class="text-xs text-themeMuted">整體風險指數：</span>
+                                <span id="riskScoreA" class="text-3xl font-black font-mono text-red-500">0%</span>
+                            </div>
+                            <div class="w-full bg-themeBg h-2 rounded-full mt-3 overflow-hidden transition-all duration-300">
+                                <div id="riskBarA" class="bg-gradient-to-r from-blue-500 to-red-500 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- 契約 B 指標 -->
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 relative overflow-hidden transition-all duration-300 shadow-sm">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-amber-500/5 rounded-full filter blur-xl"></div>
+                            <div class="flex items-center justify-between mb-4">
+                                <span class="text-xs sm:text-sm font-black text-amber-500 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-file-contract"></i> 契約 B 診斷指標
+                                </span>
+                                <span id="gradeBadgeB" class="text-[10px] font-black px-2.5 py-0.5 rounded-md bg-green-950 text-green-400 border border-green-900/30">A 等級</span>
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span class="text-xs text-themeMuted">整體風險指數：</span>
+                                <span id="riskScoreB" class="text-3xl font-black font-mono text-emerald-500">0%</span>
+                            </div>
+                            <div class="w-full bg-themeBg h-2.5 rounded-full mt-3 overflow-hidden transition-all duration-300">
+                                <div id="riskBarB" class="bg-gradient-to-r from-blue-500 to-emerald-500 h-full rounded-full transition-all duration-1000" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 優劣細節並列 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 sm:p-6 space-y-4 transition-all duration-300 shadow-sm">
+                            <h3 class="text-sm sm:text-base font-black text-blue-400 pb-2 border-b border-themeBorder flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                                <span>契約 A 優劣剖析</span>
+                            </h3>
+                            <div class="space-y-2">
+                                <span class="text-xs font-black text-emerald-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check"></i> 🟢 相對優勢 (Pros)
+                                </span>
+                                <ul id="prosListA" class="space-y-1.5 pl-4 list-disc text-xs text-themeText leading-relaxed font-medium"></ul>
+                            </div>
+                            <div class="space-y-2 pt-2 border-t border-themeBorder">
+                                <span class="text-xs font-black text-red-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-xmark"></i> 🔴 潛在風險 (Cons)
+                                </span>
+                                <ul id="consListA" class="space-y-1.5 pl-4 list-disc text-xs text-themeText leading-relaxed font-medium"></ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 sm:p-6 space-y-4 transition-all duration-300 shadow-sm">
+                            <h3 class="text-sm sm:text-base font-black text-amber-500 pb-2 border-b border-themeBorder flex items-center gap-2">
+                                <i class="fa-solid fa-clipboard-list"></i>
+                                <span>契約 B 優劣剖析</span>
+                            </h3>
+                            <div class="space-y-2">
+                                <span class="text-xs font-black text-emerald-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-check"></i> 🟢 相對優勢 (Pros)
+                                </span>
+                                <ul id="prosListB" class="space-y-1.5 pl-4 list-disc text-xs text-themeText leading-relaxed font-medium"></ul>
+                            </div>
+                            <div class="space-y-2 pt-2 border-t border-themeBorder">
+                                <span class="text-xs font-black text-red-500 flex items-center gap-1">
+                                    <i class="fa-solid fa-circle-xmark"></i> 🔴 潛在風險 (Cons)
+                                </span>
+                                <ul id="consListB" class="space-y-1.5 pl-4 list-disc text-xs text-themeText leading-relaxed font-medium"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 智能推薦 -->
+                    <div class="bg-emerald-500/5 border border-emerald-500/15 p-6 rounded-2xl transition-all duration-300">
+                        <div class="flex items-start space-x-3.5">
+                            <div class="bg-emerald-500/10 p-3.5 rounded-xl text-emerald-500 flex-shrink-0">
+                                <i class="fa-solid fa-scale-balanced text-2xl"></i>
+                            </div>
+                            <div class="space-y-1.5">
+                                <div class="flex items-center gap-2">
+                                    <h4 class="text-sm sm:text-base font-black text-themeText">⚖️ AI 推薦首選：</h4>
+                                    <span id="aiRecommendationBadge" class="px-3 py-0.5 rounded text-[10px] font-black bg-emerald-500 text-white">契約 B</span>
+                                </div>
+                                <p class="text-xs text-themeMuted leading-relaxed font-medium" id="compareVerdict">
+                                    對比結論加載中...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="w-full sm:w-auto bg-themeCard hover:bg-themeBorder text-themeText font-extrabold px-6 py-2.5 rounded-xl border border-themeBorder text-xs sm:text-sm flex items-center justify-center space-x-1 transition duration-300">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        <span>重新對比新條款</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== 頁面 C：版本更迭 PK 比較模式 ==================== -->
+        <div id="versionModeSection" class="hidden transition-all duration-300">
+            <div class="text-center mb-8 max-w-3xl mx-auto">
+                <h1 class="text-3xl sm:text-4xl font-black text-themeText mb-4 tracking-tight">
+                    條款更新 <span class="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">「暗藏玄機」</span>？
+                </h1>
+                <p class="text-themeMuted text-xs sm:text-sm leading-relaxed">
+                    軟體突然彈出「更新同意書」？AI 幫你精準抓出「新增了什麼惡法、偷偷閹割了什麼保障」！
+                </p>
+            </div>
+
+            <!-- 輸入區域 -->
+            <div class="bg-themeCard rounded-2xl border border-themeBorder p-5 sm:p-6 mb-8 shadow-xl relative overflow-hidden transition-colors duration-300">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3 border-b border-themeBorder pb-4">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse"></div>
+                        <h2 class="text-sm font-black text-themeText">請貼上修改前與修改後的條款本文：</h2>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5">
+                        <span class="text-[11px] text-themeMuted font-bold">載入變更範例：</span>
+                        <button onclick="loadVersionExample('privacyUpdate')" class="text-[11px] bg-themeBg hover:bg-themeCard text-themeMuted hover:text-themeText px-2.5 py-1.5 rounded-lg border border-themeBorder transition font-bold shadow-sm">
+                            🔒 隱私條約偷偷賣個資變更
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- 舊版輸入 -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-themeMuted flex items-center space-x-1.5">
+                                <i class="fa-solid fa-clock-rotate-left"></i>
+                                <span>修改前舊版條約 (Before)</span>
+                            </span>
+                            <span class="text-[10px] text-themeMuted font-mono" id="charCountOld">0 字</span>
+                        </div>
+                        <textarea id="tosInputOld" rows="8" 
+                            class="w-full bg-themeBg text-themeText placeholder-themeMuted rounded-xl border border-themeBorder p-4 font-sans text-xs focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-transparent transition resize-none duration-300" 
+                            placeholder="貼上舊版合約..."></textarea>
+                    </div>
+
+                    <!-- 新版輸入 -->
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-cyan-400 flex items-center space-x-1.5">
+                                <i class="fa-solid fa-circle-up"></i>
+                                <span>修改後新版條約 (After)</span>
+                            </span>
+                            <span class="text-[10px] text-themeMuted font-mono" id="charCountNew">0 字</span>
+                        </div>
+                        <textarea id="tosInputNew" rows="8" 
+                            class="w-full bg-themeBg text-themeText placeholder-themeMuted rounded-xl border border-themeBorder p-4 font-sans text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition resize-none duration-300" 
+                            placeholder="貼上最新合約..."></textarea>
+                    </div>
+                </div>
+
+                <div class="mt-5 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-themeBorder">
+                    <span class="text-xs text-themeMuted flex items-center space-x-1">
+                        <i class="fa-solid fa-arrows-spin text-cyan-400 animate-spin"></i>
+                        <span>AI 將對新設霸王條款與縮水保障進行對比。</span>
+                    </span>
+                    <button id="versionBtn" onclick="analyzeVersionChange()" 
+                        class="w-full sm:w-auto bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:opacity-95 text-white font-bold px-10 py-3.5 rounded-xl shadow-lg flex items-center justify-center space-x-2 transform hover:-translate-y-0.5 transition-all duration-200 text-xs sm:text-sm">
+                        <i class="fa-solid fa-clock-rotate-left text-base"></i>
+                        <span>開始版本變更診斷</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Version Comparison Results -->
+            <div id="versionResultArea" class="hidden transition-all duration-500">
+                <div class="p-1 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- 風險走勢 -->
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 relative overflow-hidden flex flex-col justify-between transition-all duration-300 shadow-sm">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-xs text-themeMuted font-black">條約風險演變走勢</span>
+                                <span id="versionTrendLabel" class="text-[10px] font-black px-2 py-0.5 rounded bg-red-950 text-red-400 border border-red-900/30">風險上升</span>
+                            </div>
+                            <div class="flex items-baseline space-x-1.5">
+                                <span id="riskDeltaValue" class="text-3xl font-black font-mono text-red-500">+0%</span>
+                                <span class="text-xs text-themeMuted">風險演變係數</span>
+                            </div>
+                            <p class="text-[10px] text-themeMuted mt-2">※ 數值為正代表新版條約比舊版對您更苛刻或藏有更多不平等協議。</p>
+                        </div>
+
+                        <!-- 舊版總風險 -->
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 flex items-center space-x-3.5 transition-all duration-300 shadow-sm">
+                            <div class="bg-gray-500/10 p-2.5 rounded-lg text-themeMuted">
+                                <i class="fa-solid fa-history text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-themeMuted block font-black">歷史舊版本總風險</span>
+                                <span class="text-xl font-black text-themeMuted font-mono" id="oldRiskScore">50%</span>
+                            </div>
+                        </div>
+
+                        <!-- 新版總風險 -->
+                        <div class="bg-themeCard border border-themeBorder rounded-2xl p-5 flex items-center space-x-3.5 transition-all duration-300 shadow-sm">
+                            <div class="bg-cyan-500/10 p-2.5 rounded-lg text-cyan-400">
+                                <i class="fa-solid fa-circle-up text-xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-xs text-themeMuted block font-black">最新版本總風險</span>
+                                <span class="text-xl font-black text-cyan-400 font-mono" id="newRiskScore">65%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 三欄式版本演進細節 -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- 🔴 新加入高危條款 -->
+                        <div class="bg-themeCard/50 rounded-2xl p-5 border border-themeBorder neon-border-red flex flex-col justify-between transition-all duration-300">
+                            <div>
+                                <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="flex h-2.5 w-2.5 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                        </span>
+                                        <h3 class="text-base font-black text-red-500">🔴 新加入高危條款</h3>
+                                    </div>
+                                    <span class="text-[10px] bg-red-950 text-red-400 px-2 py-0.5 rounded font-bold border border-red-800/30">新設限制</span>
+                                </div>
+                                <div id="addedRisksList" class="space-y-4"></div>
+                            </div>
+                        </div>
+
+                        <!-- 🟡 偷偷移除/縮水之保障 -->
+                        <div class="bg-themeCard/50 rounded-2xl p-5 border border-themeBorder neon-border-yellow flex flex-col justify-between transition-all duration-300">
+                            <div>
+                                <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="flex h-2.5 w-2.5 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-amber-500"></span>
+                                        </span>
+                                        <h3 class="text-base font-black text-amber-500">🟡 被閹割舊保障</h3>
+                                    </div>
+                                    <span class="text-[10px] bg-amber-950 text-amber-400 px-2 py-0.5 rounded font-bold border border-amber-800/30">安全縮水</span>
+                                </div>
+                                <div id="removedProtectionsList" class="space-y-4"></div>
+                            </div>
+                        </div>
+
+                        <!-- 🟢 版本演進結論與對策 -->
+                        <div class="bg-themeCard/50 rounded-2xl p-5 border border-themeBorder neon-border-green flex flex-col justify-between transition-all duration-300">
+                            <div>
+                                <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="flex h-2.5 w-2.5 relative">
+                                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                        </span>
+                                        <h3 class="text-base font-black text-emerald-400">🟢 版本演進防線</h3>
+                                    </div>
+                                    <span class="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-0.5 rounded font-bold border border-emerald-800/30">智能升級</span>
+                                </div>
+                                <div id="versionVerdictCard" class="space-y-4">
+                                    <div class="bg-emerald-500/5 rounded-xl p-4 border border-emerald-500/10 hover:border-emerald-500/30 transition duration-200">
+                                        <p class="text-xs text-themeText font-sans leading-relaxed font-medium" id="versionVerdictText">
+                                            對策與分析結論加載中...
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-end">
+                    <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="w-full sm:w-auto bg-themeCard hover:bg-themeBorder text-themeText font-extrabold px-6 py-2.5 rounded-xl border border-themeBorder text-xs sm:text-sm flex items-center justify-center space-x-1 transition duration-300">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        <span>重新上傳新版本</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- API 設定 Modal -->
+    <div id="configModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4 transition-all duration-300">
+        <div class="bg-themeCard border border-themeBorder w-full max-w-md rounded-2xl p-6 shadow-2xl transform scale-95 transition-all">
+            <div class="flex items-center justify-between pb-3 border-b border-themeBorder mb-4">
+                <div class="flex items-center space-x-2 text-blue-500">
+                    <i class="fa-solid fa-key"></i>
+                    <h3 class="font-bold text-base text-themeText">設定 Gemini API 金鑰</h3>
+                </div>
+                <button onclick="closeConfigModal()" class="text-themeMuted hover:text-themeText"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            
+            <p class="text-xs text-themeMuted mb-4 leading-relaxed font-medium">
+                本工具直接在您的瀏覽器呼叫 Google Gemini API。金鑰將僅儲存於您本地的瀏覽器，不會上傳給 any 第三方。
+            </p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-themeText mb-1.5">Gemini API Key</label>
+                    <input type="password" id="apiKeyInput" 
+                        class="w-full bg-themeBg text-themeText placeholder-themeMuted rounded-lg border border-themeBorder p-2.5 text-xs sm:text-sm font-mono focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                        placeholder="請填入 Gemini API 金鑰...">
+                </div>
+                <div class="text-xs text-blue-500/90 flex items-start space-x-1 font-medium">
+                    <i class="fa-solid fa-circle-info mt-0.5 flex-shrink-0"></i>
+                    <span>
+                        您可以至 <a href="https://aistudio.google.com/" target="_blank" class="underline hover:text-blue-400">Google AI Studio</a> 免費申請 API Key。
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <button onclick="closeConfigModal()" class="px-4 py-2 text-xs bg-themeBg text-themeText rounded-lg border border-themeBorder hover:bg-themeBorder transition font-bold">取消</button>
+                <button onclick="saveApiKey()" class="px-5 py-2 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-500 font-black transition shadow-sm shadow-blue-500/20">儲存設定</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁尾 -->
+    <footer class="relative z-10 border-t border-themeBorder bg-themeCard/30 py-6 text-center text-[11px] text-themeMuted transition-all duration-300 font-medium">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>© 2026 ToS-Shield 條款拆彈器. 資訊期末專題作品.</p>
+            <p class="flex items-center space-x-1.5">
+                <span>Cybersecurity & Consumer Rights</span>
+                <span>•</span>
+                <span>一人戰隊開發專利</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        let activeMode = 'single';
+
+        const EXAMPLES = {
+            game: `【終極王國 帳號註冊協議】
+本協議由您（簡稱「使用者」）與 終極網路娛樂公司（簡稱「本公司」）締結。
+
+第五條：帳號之終止與刪除
+本公司有權利在不經提前通知的情況下，因任何營運考量，隨時終止、凍結、暫停或完全刪除您的遊戲帳號，亦不需要對使用者進行任何補償。本帳號內所有購買之虛擬貨幣（終極幣）、道具、裝備，皆不予退費，使用者同意完全放棄此等虛擬資產的所有權利與索賠權。
+
+第十二條：免責聲明
+本公司伺服器如因任何硬體故障、駭客攻擊、不可抗力因素導致使用者遊戲數據遺失、中斷、甚至導致虛擬資產損毀，本公司概不負責任何損害賠償。
+
+第十五條：準據法與爭議解決
+若發生法律爭議，使用者同意放棄發起集體訴訟之權利。所有爭議必須個別提交至本公司指定之仲裁庭進行仲裁。`,
+
+            social: `【BuzzSocial 社群平台隱私與服務條款】
+歡迎註冊 BuzzSocial。當您點擊註冊，即代表您完全理解並同意本合約之所有條款。
+
+第三條：智慧財產權之授權
+使用者在 BuzzSocial 上發布、上傳之所有原創內容（包含但不限於文字、攝影、錄影、個人創作、圖片），即自動在全球範圍內無償、永久、不可撤銷地授權給本公司。本公司有權利將其進行重製、編輯、甚至轉售給第三方商業廣告公司進行宣傳，且無須向使用者支付 any 著作酬勞 or 通知作者。
+
+第七條：個資隱私條約
+本平台有權監控、追蹤您在背景運作時的精準 GPS 地理位置，以及您的設備聯絡人資訊與瀏覽器 cookies。使用者同意本公司有權將前述收集之所有資料，自由分享給本公司之協力廠商、行銷公司 or 第三方廣告業者。`,
+
+            foreign: `【Discord Terms of Service & Privacy Policy Excerpt】
+Welcome to Discord. Please review our terms.
+
+Section 4: Content Ownership and License
+When you upload, post, or otherwise make available any content on our services, you grant Discord a worldwide, royalty-free, perpetual, irrevocable, sublicensable, and transferable license to use, reproduce, distribute, prepare derivative works of, display, and perform that content in connection with the services. 
+
+Section 9: Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, DISCORD AND ITS SUPPLIERS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES.
+
+Section 14: Dispute Resolution and Governing Law
+YOU AND DISCORD AGREE THAT ANY DISPUTE RESOLUTION PROCEEDINGS WILL BE CONDUCTED ONLY ON AN INDIVIDUAL BASIS AND NOT IN A CLASS, CONSOLIDATED OR REPRESENTATIVE ACTION.`
+        };
+
+        const COMPARE_EXAMPLES = {
+            gamePK: {
+                A: `【超神紀元 帳號註冊條款（合約A）】
+本公司有權在不經通知之情況下，因應伺服器合併、縮編 or any 商業考量，隨時終止或完全刪除您的玩家帳號。本帳號內購買之所有虛擬點數、裝備道具，一旦終止即視同完全歸零，本公司不予進行 any 形式的退款。
+若伺服器因故障 or 駭客攻擊導致使用者遊戲資料毀損流失，本公司不負 any 損害賠償義務。`,
+                B: `【幻想大地 註冊定型化服務契約（合約B）】
+當伺服器因維護、故障 or 不可抗力事件中斷服務超過24小時，本公司將按日數 or 比例延長使用期限，或提供等值之虛擬遊戲幣作為補償。
+若本公司計畫終止營運本服務，將於停止營運前30日公告。使用者帳號內剩餘未使用之儲值點數，扣除手續費外，本公司承諾將辦理現金退費。`
+            },
+            socialPK: {
+                A: `【快影影音 社群平台授權協議（合約A）】
+使用者一旦在本平台上傳任何原創圖片、個人短影音，即視為永久、全球、無償且不可撤銷地授權本公司. 本公司有權自由重製、銷售 or provide 任何商業廣告第三方，且無須向作者支付 any 著作酬勞 or 通知作者.
+本平台可不經詢問直接取得、共享、並分析使用者的地理軌跡與通訊錄個資。`,
+                B: `【微光沙龍 獨立創作社群隱私協議（合約B）】
+使用者上傳之所有原創著作與圖片，其著作權與財產權百分之百歸原創作者所有。平台僅為展示之目的，取得在平台內儲存與顯示之非專屬、有限度授權。
+未經使用者明確點擊授權，本平台絕不私自向第三方共享、販售 or 外洩 any 個資。`
+            }
+        };
+
+        const VERSION_EXAMPLES = {
+            privacyUpdate: {
+                oldText: `【微光雲端 隱私權政策與損害賠償（2024年舊版）】
+第三條：資料保護。本公司承諾，未經您明確同意，絕不將您的個人可識別資訊（包含姓名、電子郵件、電話等個人資訊）揭露、共享、販售 or 提供給 any 第三方廣告商。
+第七條：資安責任與損害賠償。若發生伺服器資料外洩事件，本公司查明若屬資安防護不周，將對受影響之註冊會員提供最高每人新台幣壹萬元之損害賠償與系統中斷補償。`,
+                newText: `【微光雲端 隱私權與責任限制條款（2026年最新版）】
+第三條：個人化數據共享與行銷。為了優化您的服務體驗，當您點擊同意，即視為您授權本公司得將您的個人識別資訊（姓名、電話、電郵）、設備Cookies、瀏覽軌跡及精準背景地理位置，與我們的協力夥伴進行全面數據共用與行銷廣告。
+第八條：免責限制。在法律允許的最大範圍內，本公司對於因網路駭客攻擊、伺服器意外中斷、資安事故 or any 第三方軟體行為造成的使用者個人資料外洩、損毀、洩露 or 遺失，本公司概不負 any 賠償 or 補償責任。`
+            }
+        };
+
+        window.onload = function() {
+            // 初始化主題
+            const savedTheme = localStorage.getItem('tos_theme') || 'dark';
+            if (savedTheme === 'light') {
+                document.body.classList.add('light');
+                const themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) {
+                    themeIcon.className = "fa-solid fa-moon text-sm text-amber-500";
+                }
+            } else {
+                const themeIcon = document.getElementById('themeIcon');
+                if (themeIcon) {
+                    themeIcon.className = "fa-solid fa-sun text-sm text-yellow-400";
+                }
+            }
+
+            const savedKey = localStorage.getItem('tos_api_key') || "";
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            if (apiKeyInput) {
+                apiKeyInput.value = savedKey;
+            }
+
+            // 字數監聽器
+            const textarea = document.getElementById('tosInput');
+            if (textarea) {
+                textarea.addEventListener('input', () => {
+                    const charCount = document.getElementById('charCount');
+                    if (charCount) charCount.textContent = textarea.value.length + " 字";
+                });
+            }
+
+            const textareaA = document.getElementById('tosInputA');
+            const textareaB = document.getElementById('tosInputB');
+            if (textareaA) {
+                textareaA.addEventListener('input', () => {
+                    const charCountA = document.getElementById('charCountA');
+                    if (charCountA) charCountA.textContent = textareaA.value.length + " 字";
+                });
+            }
+            if (textareaB) {
+                textareaB.addEventListener('input', () => {
+                    const charCountB = document.getElementById('charCountB');
+                    if (charCountB) charCountB.textContent = textareaB.value.length + " 字";
+                });
+            }
+
+            const textareaOld = document.getElementById('tosInputOld');
+            const textareaNew = document.getElementById('tosInputNew');
+            if (textareaOld) {
+                textareaOld.addEventListener('input', () => {
+                    const charCountOld = document.getElementById('charCountOld');
+                    if (charCountOld) charCountOld.textContent = textareaOld.value.length + " 字";
+                });
+            }
+            if (textareaNew) {
+                textareaNew.addEventListener('input', () => {
+                    const charCountNew = document.getElementById('charCountNew');
+                    if (charCountNew) charCountNew.textContent = textareaNew.value.length + " 字";
+                });
+            }
+        }
+
+        // 💡 明暗主題切換
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            
+            if (body.classList.contains('light')) {
+                body.classList.remove('light');
+                localStorage.setItem('tos_theme', 'dark');
+                if (themeIcon) themeIcon.className = "fa-solid fa-sun text-sm text-yellow-400";
+                showStatusMessage("已切換至極客暗色模式 🌌");
+            } else {
+                body.classList.add('light');
+                localStorage.setItem('tos_theme', 'light');
+                if (themeIcon) themeIcon.className = "fa-solid fa-moon text-sm text-amber-500";
+                showStatusMessage("已切換至高雅亮色模式 ☀️");
+            }
+        }
+
+        function switchMode(mode) {
+            activeMode = mode;
+            const singleSec = document.getElementById('singleModeSection');
+            const compareSec = document.getElementById('compareModeSection');
+            const versionSec = document.getElementById('versionModeSection');
+            
+            const btnSingle = document.getElementById('btnSingleMode');
+            const btnCompare = document.getElementById('btnCompareMode');
+            const btnVersion = document.getElementById('btnVersionMode');
+
+            if (singleSec) singleSec.classList.add('hidden');
+            if (compareSec) compareSec.classList.add('hidden');
+            if (versionSec) versionSec.classList.add('hidden');
+
+            if (btnSingle) btnSingle.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 text-themeMuted hover:text-themeText";
+            if (btnCompare) btnCompare.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 text-themeMuted hover:text-themeText";
+            if (btnVersion) btnVersion.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 text-themeMuted hover:text-themeText";
+
+            if (mode === 'single') {
+                if (singleSec) singleSec.classList.remove('hidden');
+                if (btnSingle) btnSingle.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 bg-blue-600 text-white shadow-md";
+            } else if (mode === 'compare') {
+                if (compareSec) compareSec.classList.remove('hidden');
+                if (btnCompare) btnCompare.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 bg-emerald-600 text-white shadow-md";
+            } else if (mode === 'version') {
+                if (versionSec) versionSec.classList.remove('hidden');
+                if (btnVersion) btnVersion.className = "px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all duration-200 flex items-center space-x-1.5 bg-cyan-600 text-white shadow-md";
+            }
+            hideError();
+        }
+
+        function openConfigModal() {
+            const modal = document.getElementById('configModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            const modal = document.getElementById('configModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function saveApiKey() {
+            const apiKeyInput = document.getElementById('apiKeyInput');
+            if (apiKeyInput) {
+                const val = apiKeyInput.value.trim();
+                localStorage.setItem('tos_api_key', val);
+            }
+            closeConfigModal();
+            showStatusMessage("API 金鑰儲存成功！");
+        }
+
+        function loadExample(type) {
+            const textarea = document.getElementById('tosInput');
+            if (textarea) {
+                textarea.value = EXAMPLES[type] || "";
+                textarea.dispatchEvent(new Event('input'));
+                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+
+        function loadCompareExample(type) {
+            const data = COMPARE_EXAMPLES[type];
+            if (data) {
+                const textareaA = document.getElementById('tosInputA');
+                const textareaB = document.getElementById('tosInputB');
+                if (textareaA && textareaB) {
+                    textareaA.value = data.A;
+                    textareaB.value = data.B;
+                    textareaA.dispatchEvent(new Event('input'));
+                    textareaB.dispatchEvent(new Event('input'));
+                    textareaA.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function loadVersionExample(type) {
+            const data = VERSION_EXAMPLES[type];
+            if (data) {
+                const textareaOld = document.getElementById('tosInputOld');
+                const textareaNew = document.getElementById('tosInputNew');
+                if (textareaOld && textareaNew) {
+                    textareaOld.value = data.oldText;
+                    textareaNew.value = data.newText;
+                    textareaOld.dispatchEvent(new Event('input'));
+                    textareaNew.dispatchEvent(new Event('input'));
+                    textareaOld.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+
+        function hideError() {
+            const errorArea = document.getElementById('errorArea');
+            if (errorArea) {
+                errorArea.classList.add('hidden');
+            }
+        }
+
+        function showStatusMessage(msg) {
+            const toast = document.createElement('div');
+            toast.className = "fixed bottom-5 right-5 z-50 bg-blue-600 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg border border-blue-400/20 flex items-center space-x-2";
+            toast.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // ==================== 🚀 呼叫 API 核心邏輯 ====================
+
+        async function fetchGeminiAPI(apiKey, promptText, retries = 5, delay = 1000) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            overallRiskIndex: { type: "INTEGER" },
+                            redLightItems: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        clause: { type: "STRING" },
+                                        tag: { type: "STRING" },
+                                        translation: { type: "STRING" },
+                                        reason: { type: "STRING" },
+                                        lawArticle: { type: "STRING" }
+                                    },
+                                    required: ["clause", "tag", "translation", "reason", "lawArticle"]
+                                }
+                            },
+                            yellowLightItems: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        clause: { type: "STRING" },
+                                        tag: { type: "STRING" },
+                                        translation: { type: "STRING" },
+                                        sacrificedRight: { type: "STRING" }
+                                    },
+                                    required: ["clause", "tag", "translation", "sacrificedRight"]
+                                }
+                            },
+                            greenLightMissingItems: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        missingItem: { type: "STRING" },
+                                        importance: { type: "STRING" },
+                                        suggestedAction: { type: "STRING" }
+                                    },
+                                    required: ["missingItem", "importance", "suggestedAction"]
+                                }
+                            },
+                            summaryAdvice: { type: "STRING" },
+                            safetyGrade: { type: "STRING" }
+                        },
+                        required: ["overallRiskIndex", "redLightItems", "yellowLightItems", "greenLightMissingItems", "summaryAdvice", "safetyGrade"]
+                    }
+                }
+            };
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return await response.json();
+                    if (response.status === 429 || response.status >= 500) throw new Error(`伺服器忙碌 (${response.status})`);
+                    const errDetails = await response.text();
+                    throw new Error(`API 失敗: ${errDetails}`);
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function fetchGeminiAPICompare(apiKey, promptText, retries = 5, delay = 1000) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            contractA: {
+                                type: "OBJECT",
+                                properties: {
+                                    riskIndex: { type: "INTEGER" },
+                                    safetyGrade: { type: "STRING" },
+                                    pros: { type: "ARRAY", items: { type: "STRING" } },
+                                    cons: { type: "ARRAY", items: { type: "STRING" } }
+                                },
+                                required: ["riskIndex", "safetyGrade", "pros", "cons"]
+                            },
+                            contractB: {
+                                type: "OBJECT",
+                                properties: {
+                                    riskIndex: { type: "INTEGER" },
+                                    safetyGrade: { type: "STRING" },
+                                    pros: { type: "ARRAY", items: { type: "STRING" } },
+                                    cons: { type: "ARRAY", items: { type: "STRING" } }
+                                },
+                                required: ["riskIndex", "safetyGrade", "pros", "cons"]
+                            },
+                            comparisonVerdict: { type: "STRING" },
+                            betterChoice: { type: "STRING" }
+                        },
+                        required: ["contractA", "contractB", "comparisonVerdict", "betterChoice"]
+                    }
+                }
+            };
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return await response.json();
+                    if (response.status === 429 || response.status >= 500) throw new Error(`伺服器忙碌`);
+                    const errDetails = await response.text();
+                    throw new Error(`API 失敗: ${errDetails}`);
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        async function fetchGeminiAPIVersion(apiKey, promptText, retries = 5, delay = 1000) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                generationConfig: {
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                        type: "OBJECT",
+                        properties: {
+                            oldRiskIndex: { type: "INTEGER" },
+                            newRiskIndex: { type: "INTEGER" },
+                            riskDelta: { type: "INTEGER" },
+                            riskTrend: { type: "STRING" },
+                            addedRisks: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        clause: { type: "STRING" },
+                                        tag: { type: "STRING" },
+                                        translation: { type: "STRING" },
+                                        reason: { type: "STRING" }
+                                    },
+                                    required: ["clause", "tag", "translation", "reason"]
+                                }
+                            },
+                            removedProtections: {
+                                type: "ARRAY",
+                                items: {
+                                    type: "OBJECT",
+                                    properties: {
+                                        clause: { type: "STRING" },
+                                        tag: { type: "STRING" },
+                                        translation: { type: "STRING" },
+                                        consequence: { type: "STRING" }
+                                    },
+                                    required: ["clause", "tag", "translation", "consequence"]
+                                }
+                            },
+                            versionVerdict: { type: "STRING" }
+                        },
+                        required: ["oldRiskIndex", "newRiskIndex", "riskDelta", "riskTrend", "addedRisks", "removedProtections", "versionVerdict"]
+                    }
+                }
+            };
+
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) return await response.json();
+                    if (response.status === 429 || response.status >= 500) throw new Error(`伺服器忙碌`);
+                    const errDetails = await response.text();
+                    throw new Error(`API 失敗: ${errDetails}`);
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+            }
+        }
+
+        // ==================== ⚡ 觸發分析按鈕事件 ====================
+        async function analyzeContract() {
+            const inputVal = document.getElementById('tosInput').value.trim();
+            const errorArea = document.getElementById('errorArea');
+            const errorMessage = document.getElementById('errorMessage');
+            const resultArea = document.getElementById('resultArea');
+            const loadingArea = document.getElementById('loadingArea');
+            const loadingTip = document.getElementById('loadingTip');
+
+            if (!inputVal) {
+                if (errorArea) errorArea.classList.remove('hidden');
+                if (errorMessage) errorMessage.textContent = "請先貼上需要分析的條款內容！";
+                if (resultArea) resultArea.classList.add('hidden');
+                return;
+            }
+
+            let apiKey = localStorage.getItem('tos_api_key') || "";
+            hideError();
+            if (resultArea) resultArea.classList.add('hidden');
+            if (loadingArea) loadingArea.classList.remove('hidden');
+            document.getElementById('analyseBtn').disabled = true;
+
+            const tips = [
+                "正在進行消費者法理合規審計...",
+                "正在尋找隱性話術與漏洞...",
+                "正在進行個資與隱私保護度評分...",
+                "正在配對具體的定型化契約法規依據..."
+            ];
+            let tipIdx = 0;
+            const tipInterval = setInterval(() => {
+                if (loadingTip) loadingTip.textContent = tips[tipIdx % tips.length];
+                tipIdx++;
+            }, 2500);
+
+            const prompt = `你是一位精通台灣消保法、個資法的頂尖資安法務合約專家。
+            請分析以下貼上的服務協議或隱私條款，並依據規則回應：
+            1. 將風險分成紅燈（可能違法/無效）與黃燈（犧牲權益/灰色條約）。
+            2. 【小標標記】：分類標籤必須為「正好四個字」（例如：『個資安全』、『財務損失』、『著作侵權』）。
+            3. 【白話翻譯解密】：提供幽默的大白話解密。
+            4. 【遺漏條款（綠色框）】：診斷合約中缺少的保護性防線條款。
+
+            [合約內容]
+            ${inputVal}
+            `;
+
+            try {
+                const result = await fetchGeminiAPI(apiKey, prompt);
+                const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error("模型回傳空的資料，請重新嘗試一次。");
+
+                const responseData = JSON.parse(rawText);
+
+                renderResults(responseData);
+
+                if (loadingArea) loadingArea.classList.add('hidden');
+                if (resultArea) {
+                    resultArea.classList.remove('hidden');
+                    resultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (err) {
+                console.error(err);
+                if (errorArea) errorArea.classList.remove('hidden');
+                if (loadingArea) loadingArea.classList.add('hidden');
+                if (errorMessage) {
+                    if (err.message.includes("API_KEY_INVALID") || err.message.includes("key")) {
+                        errorMessage.innerHTML = `您的 API Key 似乎不正確。請點擊右上角「<strong>設定</strong>」填入您個人的 Gemini API Key。`;
+                    } else {
+                        errorMessage.textContent = err.message || "發生網路錯誤，請稍後重試。";
+                    }
+                }
+            } finally {
+                clearInterval(tipInterval);
+                document.getElementById('analyseBtn').disabled = false;
+            }
+        }
+
+        function renderResults(data) {
+            const redList = document.getElementById('redList');
+            const yellowList = document.getElementById('yellowList');
+            const greenList = document.getElementById('greenList');
+
+            if (redList) redList.innerHTML = "";
+            if (yellowList) yellowList.innerHTML = "";
+            if (greenList) greenList.innerHTML = "";
+
+            const riskIndex = data.overallRiskIndex !== undefined ? data.overallRiskIndex : 50;
+            const riskScoreEl = document.getElementById('riskScore');
+            const riskLabelEl = document.getElementById('riskLabel');
+            const riskBarEl = document.getElementById('riskBar');
+
+            if (riskScoreEl) riskScoreEl.textContent = `${riskIndex}%`;
+            if (riskBarEl) riskBarEl.style.width = `${riskIndex}%`;
+
+            if (riskIndex >= 70) {
+                if (riskScoreEl) riskScoreEl.className = "text-4xl font-black font-mono text-red-500";
+                if (riskLabelEl) {
+                    riskLabelEl.className = "text-xs font-black px-2 py-0.5 rounded-md bg-red-950 text-red-400 border border-red-800/30";
+                    riskLabelEl.textContent = "極度危險";
+                }
+            } else if (riskIndex >= 40) {
+                if (riskScoreEl) riskScoreEl.className = "text-4xl font-black font-mono text-amber-500";
+                if (riskLabelEl) {
+                    riskLabelEl.className = "text-xs font-black px-2 py-0.5 rounded-md bg-amber-950 text-amber-400 border border-amber-800/30";
+                    riskLabelEl.textContent = "中度風險";
+                }
+            } else {
+                if (riskScoreEl) riskScoreEl.className = "text-4xl font-black font-mono text-green-500";
+                if (riskLabelEl) {
+                    riskLabelEl.className = "text-xs font-black px-2 py-0.5 rounded-md bg-green-950 text-green-400 border border-green-800/30";
+                    riskLabelEl.textContent = "安全良好";
+                }
+            }
+
+            const redItems = data.redLightItems || [];
+            const redCountEl = document.getElementById('redCount');
+            if (redCountEl) redCountEl.textContent = redItems.length;
+
+            if (redList) {
+                if (redItems.length === 0) {
+                    redList.innerHTML = `<div class="text-center text-themeMuted py-8 font-medium text-xs">無高危條款。</div>`;
+                } else {
+                    redItems.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = "bg-themeCard rounded-xl p-4 border border-themeBorder space-y-3 shadow-sm";
+                        card.innerHTML = `
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-red-500 block">📋 條文節錄：</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-red-500/10 text-red-500 border border-red-500/20">${item.tag || '風險條款'}</span>
+                                </div>
+                                <p class="text-xs text-themeText italic pl-2 border-l-2 border-red-500/30 leading-relaxed font-medium">${item.clause}</p>
+                                <div class="bg-red-500/5 p-2.5 rounded-xl border border-red-500/10">
+                                    <span class="text-xs font-black text-red-400 block">💡 白話翻譯潛台詞：</span>
+                                    <p class="text-xs text-themeText mt-1 font-semibold leading-relaxed">${item.translation}</p>
+                                </div>
+                                <p class="text-xs text-themeMuted leading-relaxed font-medium">${item.reason}</p>
+                                <div class="bg-themeBg rounded-lg p-2.5 border border-themeBorder shadow-inner">
+                                    <span class="text-[10px] font-black text-red-400 block mb-1">⚖️ 台灣法規依據：</span>
+                                    <p class="text-[11px] text-themeMuted leading-relaxed font-semibold">${item.lawArticle}</p>
+                                </div>
+                            </div>`;
+                        redList.appendChild(card);
+                    });
+                }
+            }
+
+            const yellowItems = data.yellowLightItems || [];
+            const yellowCountEl = document.getElementById('yellowCount');
+            if (yellowCountEl) yellowCountEl.textContent = yellowItems.length;
+
+            if (yellowList) {
+                if (yellowItems.length === 0) {
+                    yellowList.innerHTML = `<div class="text-center text-themeMuted py-8 font-medium text-xs">無權益讓渡條款。</div>`;
+                } else {
+                    yellowItems.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = "bg-themeCard rounded-xl p-4 border border-themeBorder space-y-3 shadow-sm";
+                        card.innerHTML = `
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-amber-400 block">📋 條文節錄：</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/10 text-amber-500 border border-amber-500/20">${item.tag || '權益讓渡'}</span>
+                                </div>
+                                <p class="text-xs text-themeText italic pl-2 border-l-2 border-amber-500/30 leading-relaxed font-medium">${item.clause}</p>
+                                <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/10">
+                                    <span class="text-xs font-black text-amber-500 block">💡 白話翻譯潛台詞：</span>
+                                    <p class="text-xs text-themeText mt-1 font-semibold leading-relaxed">${item.translation}</p>
+                                </div>
+                                <p class="text-xs text-themeMuted leading-relaxed font-medium"><strong>犧牲之個人權益：</strong>${item.sacrificedRight}</p>
+                            </div>`;
+                        yellowList.appendChild(card);
+                    });
+                }
+            }
+
+            const greenItems = data.greenLightMissingItems || [];
+            const greenCountEl = document.getElementById('greenCount');
+            if (greenCountEl) greenCountEl.textContent = greenItems.length;
+
+            if (greenList) {
+                if (greenItems.length === 0) {
+                    greenList.innerHTML = `<div class="text-center text-themeMuted py-8 font-medium text-xs">此合約保障健全。</div>`;
+                } else {
+                    greenItems.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = "bg-themeCard rounded-xl p-4 border border-themeBorder space-y-3 shadow-sm";
+                        card.innerHTML = `
+                            <div class="space-y-2">
+                                <h4 class="text-xs font-black text-emerald-500">🔍 遺漏條款：${item.missingItem}</h4>
+                                <p class="text-xs text-themeText leading-relaxed font-medium"><strong>缺漏隱患：</strong>${item.importance}</p>
+                                <div class="bg-themeBg rounded-lg p-2.5 border border-themeBorder shadow-inner">
+                                    <span class="text-[10px] font-black text-emerald-500 block mb-1">🛡️ 建議補上範本：</span>
+                                    <p class="text-xs text-themeMuted font-semibold">"${item.suggestedAction}"</p>
+                                </div>
+                            </div>`;
+                        greenList.appendChild(card);
+                    });
+                }
+            }
+
+            const gradeEl = document.getElementById('safetyScore');
+            if (gradeEl) {
+                gradeEl.textContent = (data.safetyGrade || "A").toUpperCase();
+            }
+
+            const smartAdviceEl = document.getElementById('smartAdvice');
+            if (smartAdviceEl) {
+                smartAdviceEl.textContent = data.summaryAdvice || "同意簽訂前，請審慎評估。";
+            }
+        }
+
+        // ==================== ⚖️ 雙合約對決 PK 流程 ====================
+        async function analyzeComparison() {
+            const inputA = document.getElementById('tosInputA').value.trim();
+            const inputB = document.getElementById('tosInputB').value.trim();
+            const errorArea = document.getElementById('errorArea');
+            const errorMessage = document.getElementById('errorMessage');
+            const compareResultArea = document.getElementById('compareResultArea');
+            const loadingArea = document.getElementById('loadingArea');
+            const loadingTip = document.getElementById('loadingTip');
+
+            if (!inputA || !inputB) {
+                if (errorArea) errorArea.classList.remove('hidden');
+                if (errorMessage) errorMessage.textContent = "請在左右兩個輸入欄分別貼上不同的合約！";
+                if (compareResultArea) compareResultArea.classList.add('hidden');
+                return;
+            }
+
+            let apiKey = localStorage.getItem('tos_api_key') || "";
+            hideError();
+            if (compareResultArea) compareResultArea.classList.add('hidden');
+            if (loadingArea) loadingArea.classList.remove('hidden');
+            document.getElementById('compareBtn').disabled = true;
+
+            const prompt = `你是一位合約對照專家。請針對「契約 A」和「契約 B」進行深度橫向比對，分析兩份合約的優缺點（Pros & Cons），評估它們的風險指數與安全等級。
+
+            [第一份條款：契約 A]
+            ${inputA}
+
+            [第二份條款：契約 B]
+            ${inputB}
+            `;
+
+            try {
+                const result = await fetchGeminiAPICompare(apiKey, prompt);
+                const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error("模型回傳空的資料，請重新嘗試一次。");
+
+                const responseData = JSON.parse(rawText);
+
+                renderCompareResults(responseData);
+
+                if (loadingArea) loadingArea.classList.add('hidden');
+                if (compareResultArea) {
+                    compareResultArea.classList.remove('hidden');
+                    compareResultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (err) {
+                console.error(err);
+                if (errorArea) errorArea.classList.remove('hidden');
+                if (loadingArea) loadingArea.classList.add('hidden');
+                if (errorMessage) errorMessage.textContent = err.message || "發生錯誤，請稍後重試。";
+            } finally {
+                document.getElementById('compareBtn').disabled = false;
+            }
+        }
+
+        function renderCompareResults(data) {
+            const riskA = data.contractA.riskIndex !== undefined ? data.contractA.riskIndex : 50;
+            const gradeA = (data.contractA.safetyGrade || "C").toUpperCase();
+            
+            const riskScoreAEl = document.getElementById('riskScoreA');
+            const riskBarAEl = document.getElementById('riskBarA');
+            const badgeA = document.getElementById('gradeBadgeA');
+
+            if (riskScoreAEl) riskScoreAEl.textContent = `${riskA}%`;
+            if (riskBarAEl) riskBarAEl.style.width = `${riskA}%`;
+            if (badgeA) {
+                badgeA.textContent = `${gradeA} 安全等級`;
+                badgeA.className = riskA >= 70 ? "text-[10px] font-black px-2.5 py-0.5 rounded-md bg-red-950 text-red-400 border border-red-900/30" : "text-[10px] font-black px-2.5 py-0.5 rounded-md bg-green-950 text-green-400 border border-green-900/30";
+            }
+
+            const riskB = data.contractB.riskIndex !== undefined ? data.contractB.riskIndex : 50;
+            const gradeB = (data.contractB.safetyGrade || "B").toUpperCase();
+            
+            const riskScoreBEl = document.getElementById('riskScoreB');
+            const riskBarBEl = document.getElementById('riskBarB');
+            const badgeB = document.getElementById('gradeBadgeB');
+
+            if (riskScoreBEl) riskScoreBEl.textContent = `${riskB}%`;
+            if (riskBarBEl) riskBarBEl.style.width = `${riskB}%`;
+            if (badgeB) {
+                badgeB.textContent = `${gradeB} 安全等級`;
+                badgeB.className = riskB >= 70 ? "text-[10px] font-black px-2.5 py-0.5 rounded-md bg-red-950 text-red-400 border border-red-900/30" : "text-[10px] font-black px-2.5 py-0.5 rounded-md bg-green-950 text-green-400 border border-green-900/30";
+            }
+
+            const prosA = document.getElementById('prosListA');
+            const consA = document.getElementById('consListA');
+            const prosB = document.getElementById('prosListB');
+            const consB = document.getElementById('consListB');
+
+            if (prosA) prosA.innerHTML = (data.contractA.pros || []).map(p => `<li>${p}</li>`).join('') || "<li>無優勢</li>";
+            if (consA) consA.innerHTML = (data.contractA.cons || []).map(c => `<li>${c}</li>`).join('') || "<li>無明顯劣勢</li>";
+            if (prosB) prosB.innerHTML = (data.contractB.pros || []).map(p => `<li>${p}</li>`).join('') || "<li>無優勢</li>";
+            if (consB) consB.innerHTML = (data.contractB.cons || []).map(c => `<li>${c}</li>`).join('') || "<li>無明顯劣勢</li>";
+
+            const aiRecommendationBadgeEl = document.getElementById('aiRecommendationBadge');
+            const compareVerdictEl = document.getElementById('compareVerdict');
+
+            if (aiRecommendationBadgeEl) aiRecommendationBadgeEl.textContent = data.betterChoice || "合約 B";
+            if (compareVerdictEl) compareVerdictEl.textContent = data.comparisonVerdict || "評測結論生成中...";
+        }
+
+        // ==================== 🔄 版本變更診斷流程 ====================
+        async function analyzeVersionChange() {
+            const oldText = document.getElementById('tosInputOld').value.trim();
+            const newText = document.getElementById('tosInputNew').value.trim();
+            const errorArea = document.getElementById('errorArea');
+            const errorMessage = document.getElementById('errorMessage');
+            const versionResultArea = document.getElementById('versionResultArea');
+            const loadingArea = document.getElementById('loadingArea');
+            const loadingTip = document.getElementById('loadingTip');
+
+            if (!oldText || !newText) {
+                if (errorArea) errorArea.classList.remove('hidden');
+                if (errorMessage) errorMessage.textContent = "請在左右兩個輸入欄分別貼上舊版與新版條款！";
+                if (versionResultArea) versionResultArea.classList.add('hidden');
+                return;
+            }
+
+            let apiKey = localStorage.getItem('tos_api_key') || "";
+            hideError();
+            if (versionResultArea) versionResultArea.classList.add('hidden');
+            if (loadingArea) loadingArea.classList.remove('hidden');
+            document.getElementById('versionBtn').disabled = true;
+
+            const prompt = `你是一位合約變更審查專家。請橫向對比「舊版契約（修改前）」與「新版契約（修改後）」。
+            找出：
+            1. 新版本中新增（Added）之霸王條款、侵害權益或停權責任轉移條款。
+            2. 舊版本本來有保護，但新版被刪除或修改縮水（Removed）之使用者保障。
+            3. 評估舊版、新版之風險指數（0-100）。
+
+            [修改前舊合約]
+            ${oldText}
+
+            [修改後新合約]
+            ${newText}
+            `;
+
+            try {
+                const result = await fetchGeminiAPIVersion(apiKey, prompt);
+                const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (!rawText) throw new Error("模型回傳空的資料，請重新嘗試一次。");
+
+                const responseData = JSON.parse(rawText);
+
+                renderVersionResults(responseData);
+
+                if (loadingArea) loadingArea.classList.add('hidden');
+                if (versionResultArea) {
+                    versionResultArea.classList.remove('hidden');
+                    versionResultArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            } catch (err) {
+                console.error(err);
+                if (errorArea) errorArea.classList.remove('hidden');
+                if (loadingArea) loadingArea.classList.add('hidden');
+                if (errorMessage) errorMessage.textContent = err.message || "發生錯誤，請稍後重試。";
+            } finally {
+                document.getElementById('versionBtn').disabled = false;
+            }
+        }
+
+        function renderVersionResults(data) {
+            const addedRisksList = document.getElementById('addedRisksList');
+            const removedProtectionsList = document.getElementById('removedProtectionsList');
+            const versionVerdictText = document.getElementById('versionVerdictText');
+
+            if (addedRisksList) addedRisksList.innerHTML = "";
+            if (removedProtectionsList) removedProtectionsList.innerHTML = "";
+
+            const oldRisk = data.oldRiskIndex !== undefined ? data.oldRiskIndex : 50;
+            const newRisk = data.newRiskIndex !== undefined ? data.newRiskIndex : 50;
+            const riskDelta = data.riskDelta !== undefined ? data.riskDelta : 0;
+            const trend = data.riskTrend || "風險持平";
+
+            const riskDeltaValEl = document.getElementById('riskDeltaValue');
+            const trendLabelEl = document.getElementById('versionTrendLabel');
+            const oldRiskScoreEl = document.getElementById('oldRiskScore');
+            const newRiskScoreEl = document.getElementById('newRiskScore');
+
+            if (oldRiskScoreEl) oldRiskScoreEl.textContent = `${oldRisk}%`;
+            if (newRiskScoreEl) newRiskScoreEl.textContent = `${newRisk}%`;
+            
+            if (riskDeltaValEl) {
+                const sign = riskDelta >= 0 ? '+' : '';
+                riskDeltaValEl.textContent = `${sign}${riskDelta}%`;
+                riskDeltaValEl.className = riskDelta > 0 ? "text-3xl font-black font-mono text-red-500" : "text-3xl font-black font-mono text-green-500";
+            }
+            if (trendLabelEl) {
+                trendLabelEl.textContent = trend;
+                trendLabelEl.className = riskDelta > 0 ? "text-xs font-black px-2 py-0.5 rounded-md bg-red-950 text-red-400 border border-red-900/30" : "text-xs font-black px-2 py-0.5 rounded-md bg-green-950 text-green-400 border border-green-900/30";
+            }
+
+            const added = data.addedRisks || [];
+            if (addedRisksList) {
+                if (added.length === 0) {
+                    addedRisksList.innerHTML = `<p class="text-xs text-themeMuted font-medium">無新增高度危險條款。</p>`;
+                } else {
+                    added.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = "bg-themeCard rounded-xl p-4 border border-themeBorder space-y-3 shadow-sm";
+                        card.innerHTML = `
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-red-500 block">📋 新增高危條文：</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-red-500/10 text-red-500 border border-red-500/20">${item.tag || '新增限制'}</span>
+                                </div>
+                                <p class="text-xs text-themeText italic pl-2 border-l-2 border-red-500/30 leading-relaxed font-medium">${item.clause}</p>
+                                <div class="bg-red-500/5 p-2.5 rounded-xl border border-red-500/10">
+                                    <span class="text-xs font-black text-red-400 block">💡 白話翻譯潛台詞：</span>
+                                    <p class="text-xs text-themeText mt-1 font-semibold leading-relaxed">${item.translation}</p>
+                                </div>
+                                <p class="text-xs text-themeMuted leading-relaxed font-medium"><strong>侵害原因：</strong>${item.reason}</p>
+                            </div>`;
+                        addedRisksList.appendChild(card);
+                    });
+                }
+            }
+
+            const removed = data.removedProtections || [];
+            if (removedProtectionsList) {
+                if (removed.length === 0) {
+                    removedProtectionsList.innerHTML = `<p class="text-xs text-themeMuted font-medium">無被移除的舊保障。</p>`;
+                } else {
+                    removed.forEach(item => {
+                        const card = document.createElement('div');
+                        card.className = "bg-themeCard rounded-xl p-4 border border-themeBorder space-y-3 shadow-sm";
+                        card.innerHTML = `
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-xs font-extrabold text-amber-400 block">📋 被閹割舊條文：</span>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500/10 text-amber-500 border border-amber-500/20">${item.tag || '安全縮水'}</span>
+                                </div>
+                                <p class="text-xs text-themeText italic pl-2 border-l-2 border-amber-500/30 leading-relaxed font-medium">${item.clause}</p>
+                                <div class="bg-amber-500/5 p-2.5 rounded-xl border border-amber-500/10">
+                                    <span class="text-xs font-black text-amber-500 block">💡 白話翻譯潛台詞：</span>
+                                    <p class="text-xs text-themeText mt-1 font-semibold leading-relaxed">${item.translation}</p>
+                                </div>
+                                <p class="text-xs text-themeMuted leading-relaxed font-medium"><strong>退步影響：</strong>${item.consequence}</p>
+                            </div>`;
+                        removedProtectionsList.appendChild(card);
+                    });
+                }
+            }
+
+            if (versionVerdictText) {
+                versionVerdictText.textContent = data.versionVerdict || "分析結論生成中...";
+            }
+        }
+
+        function loadVersionExample(type) {
+            const data = VERSION_EXAMPLES[type];
+            if (data) {
+                const textareaOld = document.getElementById('tosInputOld');
+                const textareaNew = document.getElementById('tosInputNew');
+                if (textareaOld && textareaNew) {
+                    textareaOld.value = data.oldText;
+                    textareaNew.value = data.newText;
+                    textareaOld.dispatchEvent(new Event('input'));
+                    textareaNew.dispatchEvent(new Event('input'));
+                    textareaOld.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+        }
+    </script>
+</body>
+</html>
